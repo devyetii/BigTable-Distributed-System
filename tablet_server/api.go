@@ -2,14 +2,22 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 
-func InitApi(addr string) {
+func InitApi(addr string, logFile io.Writer) {
 	app := fiber.New()
+
+    app.Use(logger.New(logger.Config{
+        Output: logFile,
+        TimeFormat: "2006/01/02 15:04:05",
+        Format: "${time} ${status} - ${latency} ${method} ${path}",
+    }))
 
     app.Get("/rows", func(c *fiber.Ctx) error {
         if rng := c.Query("range"); rng != "" {
