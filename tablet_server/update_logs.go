@@ -11,7 +11,7 @@ type SafeUpdateLog struct {
 	file os.File
 }
 
-func (l *SafeUpdateLog) LogAddRow(row_key string, cols BigTableEntry) {
+func (l *SafeUpdateLog) LogAddRow(row_key RowKeyType, cols BigTableEntry) {
 	l.mu.Lock() // Lock acquire attempt (Blocking)
 	defer l.mu.Unlock()
 
@@ -21,14 +21,14 @@ func (l *SafeUpdateLog) LogAddRow(row_key string, cols BigTableEntry) {
 	}
 }
 
-func (l *SafeUpdateLog) LogDeleteRow(row_key string) {
+func (l *SafeUpdateLog) LogDeleteRow(row_key RowKeyType) {
 	l.mu.Lock() // Lock acquire attempt (Blocking)
 	defer l.mu.Unlock()
 
 	l.file.WriteString(fmt.Sprintf("delete_row %v\n", row_key))
 }
 
-func (l *SafeUpdateLog) LogSetCells(row_key string, cols BigTableEntry) {
+func (l *SafeUpdateLog) LogSetCells(row_key RowKeyType, cols BigTableEntry) {
 	l.mu.Lock() // Lock acquire attempt (Blocking)
 	defer l.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (l *SafeUpdateLog) LogSetCells(row_key string, cols BigTableEntry) {
 	}
 }
 
-func (l *SafeUpdateLog) LogDeleteCells(row_key string, col_keys []string) {
+func (l *SafeUpdateLog) LogDeleteCells(row_key RowKeyType, col_keys []ColKeyType) {
 	l.mu.Lock() // Lock acquire attempt (Blocking)
 	defer l.mu.Unlock()
 

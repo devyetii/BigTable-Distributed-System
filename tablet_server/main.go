@@ -8,22 +8,22 @@ import (
 
 // MOCK DATA
 // TODO Remove 
-var keys []string = []string{
-    "a.person.com",
-    "b.person.com",
-    "b.persona.com",
+var keys []RowKeyType = []RowKeyType{
+    1,
+    5,
+    10,
 }
 
 var data BigTablePartition = BigTablePartition{
-	"a.person.com" : BigTableEntry{
+	1 : BigTableEntry{
 		"name" : "ebrahim",
 		"age" : "22",
 	},
-	"b.person.com" : BigTableEntry{
+	5 : BigTableEntry{
 		"name" : "Farha",
 		"age" : "23",
 	},
-	"b.persona.com" : BigTableEntry{
+	10 : BigTableEntry{
 		"name" : "Mahmoud",
 		"age" : "21",
 	},
