@@ -78,7 +78,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         row_key := c.Params("key")
         entry := make(BigTableEntry)
         if err := json.Unmarshal(c.Body(), &entry); err != nil {
-            return c.SendStatus(400)
+            return String(c, 400, "Invalid Column Keys")
         }
 
         rk, err := RowKeyFromString(row_key)
@@ -89,7 +89,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         if row := repo.setCells(rk, entry); row != nil {
             return c.JSON(row)
         } else {
-            return String(c, 400, "Row not found")
+            return String(c, 404, "Row not found")
         }
     })
 
@@ -109,7 +109,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         if row := repo.deleteCells(rk, col_keys); row != nil {
             return c.JSON(row)
         } else {
-            return String(c, 400, "Row Not found")
+            return String(c, 404, "Row Not found")
         }
     })
 
@@ -124,7 +124,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         if repo.deleteRow(rk) {
             return String(c, 200, "Deleted")
         } else {
-            return String(c, 400, "Row not found")
+            return String(c, 404, "Row not found")
         }
     })
 
