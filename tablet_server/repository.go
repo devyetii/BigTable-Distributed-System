@@ -8,62 +8,46 @@ import (
 type BigTableEntry map[string]string
 type BigTablePartition map[string]BigTableEntry
 
-var data BigTablePartition = BigTablePartition{
-	"a.person.com" : BigTableEntry{
-		"name" : "ebrahim",
-		"age" : "22",
-	},
-    "b.person.com" : BigTableEntry{
-        "name" : "Farha",
-        "age" : "23",
-    },
-    "b.persona.com" : BigTableEntry{
-        "name" : "Mahmoud",
-        "age" : "21",
-    },
-};
-
-var keys []string = []string{
-    "a.person.com",
-    "b.person.com",
-    "b.persona.com",
+type Repository struct {
+    data BigTablePartition
+    keys []string
+    updateLogsFile *SafeUpdateLog
 }
 
-func insertKeySorted(key string) {
-    idx := sort.SearchStrings(keys, key)
+func (repo *Repository) insertKeySorted(key string) {
+    idx := sort.SearchStrings(repo.keys, key)
 	
     // Expand capacity
-    keys = append(keys, "")
+    repo.keys = append(repo.keys, "")
 	
     // Shift (O(n-idx))
-    copy(keys[idx+1:], keys[idx:len(keys)-1])
+    copy(repo.keys[idx+1:], repo.keys[idx:len(repo.keys)-1])
 	
     // Insert
-    keys[idx] = key
-
+    repo.keys[idx] = key
 }
 
-func getByRange(from string, to string) BigTablePartition {
+func (repo *Repository) getByRange(from string, to string) BigTablePartition {
     if (strings.Compare(from, to) > 0) {
         return nil
     }
 
-    i, f := sort.SearchStrings(keys, from), sort.SearchStrings(keys, to)
-    if  f == len(keys) {
-        f = len(keys) - 1
+    i, f := sort.SearchStrings(repo.keys, from), sort.SearchStrings(repo.keys, to)
+    if  f == len(repo.keys) {
+        f = len(repo.keys) - 1
     }
 
     entries := make(BigTablePartition)
     for ; i <= f; i++ {
-        entries[keys[i]] = data[keys[i]]
+        entries[repo.keys[i]] = repo.data[repo.keys[i]]
     }
     return entries
 }
 
-func getByKeysList(keys []string) BigTablePartition {
+func (repo *Repository) getByKeysList(keys []string) BigTablePartition {
     entries := make(BigTablePartition)
     for _, k := range keys {
-        v, ok := data[k]
+        v, ok := repo.data[k]
         if (ok) {
             entries[k] = v
         }
@@ -71,47 +55,51 @@ func getByKeysList(keys []string) BigTablePartition {
     return entries
 }
 
-func addRow(row_key string, cols BigTableEntry) BigTableEntry {
-	_, ok := data[row_key]
+func (repo *Repository) addRow(row_key string, cols BigTableEntry) BigTableEntry {
+	_, ok := repo.data[row_key]
     if (ok) {
         return nil
     }
 
-	data[row_key] = cols
-    insertKeySorted(row_key)
-	return data[row_key]
+	repo.data[row_key] = cols
+    repo.insertKeySorted(row_key)
+    repo.updateLogsFile.LogAddRow(row_key, cols)
+	return repo.data[row_key]
 }
 
-func setCells(row_key string, cols BigTableEntry) BigTableEntry {
-    _, ok := data[row_key]
+func (repo *Repository) setCells(row_key string, cols BigTableEntry) BigTableEntry {
+    _, ok := repo.data[row_key]
     if (!ok) {
         return nil
     }
 
     for k, v := range cols {
-        data[row_key][k] = v
+        repo.data[row_key][k] = v
     }
-    return data[row_key]
+    repo.updateLogsFile.LogSetCells(row_key, cols)
+    return repo.data[row_key]
 }
 
-func deleteCells(row_key string, col_keys []string) BigTableEntry {
-    _, ok := data[row_key]
+func (repo *Repository) deleteCells(row_key string, col_keys []string) BigTableEntry {
+    _, ok := repo.data[row_key]
     if (!ok) {
         return nil
     }
 
     for _, col := range col_keys {
-        delete(data[row_key], col)
+        delete(repo.data[row_key], col)
     }
-    return data[row_key]
+    repo.updateLogsFile.LogDeleteCells(row_key, col_keys)
+    return repo.data[row_key]
 }
 
-func deleteRow(row_key string) bool {
-    _, ok := data[row_key]
+func (repo *Repository) deleteRow(row_key string) bool {
+    _, ok := repo.data[row_key]
     if (!ok) {
         return false
     }
 
-	delete(data, row_key)
+	delete(repo.data, row_key)
+    repo.updateLogsFile.LogDeleteRow(row_key)
 	return true
 }
