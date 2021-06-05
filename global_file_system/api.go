@@ -4,6 +4,7 @@ import (
 	"io"
 	"github.com/gofiber/fiber/v2"
   "github.com/gofiber/fiber/v2/middleware/logger"
+	"strconv"
 )
 
 func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
@@ -33,6 +34,10 @@ func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
 			}
 		}
 		return c.Status(200).JSON(entries)
+	})
+
+	app.Get("/rows-count", func(c *fiber.Ctx) error {
+		return c.Status(200).SendString(strconv.Itoa(len(result)))
 	})
 
 	app.Listen(addr)

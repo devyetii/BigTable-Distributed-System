@@ -7,7 +7,7 @@ import (
 	"os"
 	"math/rand"
 )
-type InputTable []BigTableEntry
+type InputData []BigTableEntry
 func changedata() {
 	//Open the dataset file
 	jsonFile, err := os.Open("dataset.json")
@@ -21,7 +21,7 @@ func changedata() {
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
   
-	var result InputTable
+	var result InputData
 	json.Unmarshal([]byte(byteValue), &result)
 
 	newTable :=make(BigTablePartition)
