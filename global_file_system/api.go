@@ -5,6 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
   "github.com/gofiber/fiber/v2/middleware/logger"
 	"strconv"
+	"fmt"
+	"bytes"
+	"bufio"
+	"strings"
 )
 
 func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
@@ -40,5 +44,37 @@ func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
 		return c.Status(200).SendString(strconv.Itoa(len(result)))
 	})
 
+	app.Put("/update-rows", func(c *fiber.Ctx) error {
+		b := bytes.NewReader(c.Body())
+		sc := bufio.NewScanner(b)
+		var updates [][]string
+		for sc.Scan() {
+				words := strings.Fields(sc.Text())
+				updates= append(updates,words)
+		}
+		updateTable(updates)
+		return c.Status(200).SendString("ok")
+	})
 	app.Listen(addr)
+}
+
+func updateTable(updates [][]string) {
+	var addRow [][]string
+	var deleteRow [][]string
+	var addCell [][]string
+	var deleteCell [][]string
+	var setCell [][]string
+  for _, update := range updates {
+		if update[0] == "add_row" {
+			addRow = append(addRow,update)
+		} else if update[0] == "delete_row" {
+			deleteRow = append(deleteRow,update)
+		} else if update[0] == "add_cell" {
+			addCell = append(addCell,update)
+		} else if update[0] == "delete_cell" {
+			deleteCell = append(deleteCell,update)
+		} else {
+			setCell = append(setCell,update)
+		}
+	}
 }
