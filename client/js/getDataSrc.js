@@ -19,7 +19,7 @@ function renderRows(rows) {
 	});
 }
 
-export function getRows() {
+document.getElementById('getRowsButton').addEventListener('click', function () {
 	let listInput = document.getElementById('list');
 
 	if (listInput.value === '') {
@@ -49,4 +49,4 @@ export function getRows() {
 			}
 		})
 		.catch((err) => alert(err));
-}
+});

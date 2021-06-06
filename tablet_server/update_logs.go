@@ -8,7 +8,12 @@ import (
 
 type SafeUpdateLog struct {
 	mu sync.Mutex
-	file os.File
+	file *os.File
+}
+
+func (l *SafeUpdateLog) GetFileForRead() *os.File {
+	l.file.Seek(0,0)
+	return l.file
 }
 
 func (l *SafeUpdateLog) LogAddRow(row_key RowKeyType, cols BigTableEntry) {
@@ -44,4 +49,13 @@ func (l *SafeUpdateLog) LogDeleteCells(row_key RowKeyType, col_keys []ColKeyType
 	for _,k := range col_keys {
 		l.file.WriteString(fmt.Sprintf("delete_cell %v %v\n", row_key, k))
 	}
+}
+
+func (l *SafeUpdateLog) ClearLogs() {
+	l.file.Close()
+	update_logs_file, err := os.OpenFile("updates.log", os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0644)
+	if (err != nil) {
+		panic(err)
+	}
+	l.file = update_logs_file
 }
