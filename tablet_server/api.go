@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	// "fmt"
 	"io"
 	"strings"
 
@@ -21,30 +22,43 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
     app.Use(logger.New(logger.Config{
         Output: logFile,
         TimeFormat: "2006/01/02 15:04:05",
-        Format: "${time} ${status} - ${latency} ${method} ${path}\n",
+        Format: "${time} Handled ${status} - ${latency} ${method} ${path}\n",
     }))
 
+    app.Post("/serve", func(c *fiber.Ctx) error {
+        // Recieve serve query
+        var serveQuery ServeQueryType
+        if err := json.Unmarshal(c.Body(), &serveQuery); err != nil {
+            return String(c, 400, "Error in serve query")
+        }
+
+        // Initialize tablets, get data from GFS and add it
+        for _, t := range serveQuery {
+            // Get data
+            data := GetDataFromGFS(t["From"], t["To"])
+            if (data == nil) {
+                return String(c, 400, "Error in GFS")
+            }
+            repo.AddData(data)
+
+            // Assign tablet
+            if (t["From"] == 0 && t["To"] == 0) {
+                continue
+            }
+            currentTablet := Tablet{ from : t["From"], to: t["To"] }
+            
+            // Set tablet count
+            currentTablet.count = len(data)
+
+            // Assign new tablet
+            repo.tablets = append(repo.tablets, &currentTablet)
+        }
+        serving = true
+        return c.Status(201).JSON("Started Serving")
+    })
+
     app.Get("/rows", func(c *fiber.Ctx) error {
-        if rng := c.Query("range"); rng != "" {
-            // Extract range string
-            range_parts := strings.Split(rng, "-")
-
-            // Cast it to the row key type
-            from, efrom := RowKeyFromString(range_parts[0]) 
-            to, eto := RowKeyFromString(range_parts[1])
-
-            // Format validation 
-            if (efrom != nil || eto != nil) {
-                return String(c, 400, "Invalid Range")
-            }
-
-            // Get and send values
-            if entries := repo.getByRange(from, to); entries == nil {
-                return String(c, 400, "Invalid Range")
-            } else {
-                return c.JSON(entries)
-            }
-        } else if list := c.Query("list"); list != "" {
+        if list := c.Query("list"); list != "" {
             // Cast keys to row key type
             keys_list := MapStringsToRowKeys(strings.Split(list, ","), func (v string) (RowKeyType,error) { return RowKeyFromString(v) })
             if keys_list == nil {
@@ -70,7 +84,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         if row := repo.addRow(rk, cols); row != nil {
             return c.JSON(row)
         } else {
-            return String(c, 400, "Row already exists")
+            return String(c, 400, "Row range invalid")
         }
     })
 
