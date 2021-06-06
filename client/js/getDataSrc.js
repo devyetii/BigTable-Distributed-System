@@ -1,4 +1,4 @@
-import { getCorrectedURLs } from './src.js';
+import { getRowsCorrectedURLs, writeLogs } from './src.js';
 
 function renderRow(row) {
 	let rowElement = document.createElement('span');
@@ -21,35 +21,32 @@ function renderRows(rows) {
 
 export function getRows() {
 	let listInput = document.getElementById('list');
-	let rangeInput = document.getElementById('range');
-	let urlParam = '?';
-	let urls = [];
-	let currentRows = [];
 
-	if (rangeInput.nodeValue !== '') {
-		urlParam += 'range=' + rangeInput.nodeValue;
-		urls = getCorrectedURLs('range');
-	} else if (listInput.nodeValue !== '') {
-		urlParam += 'list=' + listInput.nodeValue;
-		urls = getCorrectedURLs('list');
-	} else {
-		alert('no field filled correctly');
+	if (listInput.value === '') {
+		alert('invalid data');
 		return;
 	}
 
+	let rowsList = listInput.value.split(',').map((elm) => +elm);
+	let urls = getRowsCorrectedURLs(rowsList);
+	let currentRows = [];
+
 	fetch(`http://localhost${urls[0]}`)
 		.then((res) => {
+			writeLogs(location.port, `GET from server${urls[0].split('?')[0]}`);
 			currentRows = res.json;
+
 			if (urls.length > 1) {
 				fetch(`http://localhost${urls[1]}`)
 					.then((res2) => {
+						writeLogs(location.port, `GET from server${urls[1].split('?')[0]}`);
 						currentRows = currentRows.concat(res2.json);
 						renderRows(currentRows);
 					})
-					.catch((err2) => console.log(err2));
+					.catch((err2) => alert(err2));
 			} else {
 				renderRows(currentRows);
 			}
 		})
-		.catch((err) => console.log(err));
+		.catch((err) => alert(err));
 }
