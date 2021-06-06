@@ -1,13 +1,22 @@
 package main
 
-import "math"
+import (
+	"fmt"
+	"math"
+	"net/http"
+)
 
 const tabletSize = 100
 const noOfServers = 2
-const GFSEndPoint = "localhost:3033"
+
+var GFSEndPoint string = "localhost:3033"
 
 func getRowsCount() int {
-	rowsCount := 500
+	fmt.Println(GFSEndPoint)
+	response, _ := http.Get(GFSEndPoint + "/rows-count")
+	fmt.Println(response.Body)
+	rowsCount := 500 //strconv.Atoi( response.
+	//print(rowsCount)
 	return rowsCount
 }
 
@@ -48,4 +57,8 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 		}
 	}
 	return servers
+}
+
+func serveRequestServer(serverAddress string, data string) {
+
 }
