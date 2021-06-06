@@ -36,7 +36,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         // Initialize tablets, get data from GFS and add it
         for _, t := range serveQuery {
             // Get data
-            data := GetDataFromGFS(t["From"], t["To"])
+            data := repo.httpClient.GetDataFromGFS(t["From"], t["To"])
             if (data == nil) {
                 return String(c, 400, "Error in GFS")
             }

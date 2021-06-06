@@ -7,12 +7,21 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
+	"github.com/jasonlvhit/gocron"
 )
 
 // Start/Stop of the server
 var serving bool = false;
 var max_tablet_cap int
 var server_id int
+
+var update_logger SafeUpdateLog
+var httpClient HttpClient
+
+func cron(httpClient *HttpClient) {
+	gocron.Every(1).Minute().Do(httpClient.SendUpdatesToGFS)
+	<- gocron.Start()
+}
 
 func main() {
 	// Load env vars
@@ -32,24 +41,26 @@ func main() {
 	log.SetOutput(log_file)
 
 	// Setup update logs
-	update_logs_file, err := os.OpenFile("updates.log", os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0644)
+	update_logs_file, err := os.OpenFile("updates.log", os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0644)
 	if (err != nil) {
 		panic(err)
 	}
 	defer update_logs_file.Close()
-	update_logger := SafeUpdateLog{file: *update_logs_file}
+	update_logger = SafeUpdateLog{file: update_logs_file}
+	httpClient = HttpClient{ updateLogger: &update_logger }
 
 	// Get server number
-	server_id = SendServerIdRequest()
-	fmt.Println(server_id)
+	server_id = httpClient.SendServerIdRequest()
+	log.Println(fmt.Sprintf("Got id %v from master", server_id))
 
 	// Create the repository service and bind the update logger
-	repo := Repository{data: BigTablePartition{}, keys: []RowKeyType{}, updateLogsFile: &update_logger}	
+	repo := Repository{data: BigTablePartition{}, keys: []RowKeyType{}, httpClient: &httpClient, updateLogsFile: &update_logger}	
 	
+	go cron(&httpClient)
+
 	log.Println("Tablet Server Started")
 	
 	// Create the API and bind the repo
 	addr := fmt.Sprintf("localhost:%v", os.Getenv("PORT"))
 	InitApi(addr, &repo, log_file)
-
 }
