@@ -13,6 +13,7 @@ import (
 
 var metaData []Server
 var currServerId int = -1
+var hashIPMap map[int]string = make(map[int]string)
 
 func InitApi(addr string, logFile io.Writer) {
 	app := fiber.New()
@@ -43,11 +44,13 @@ func InitApi(addr string, logFile io.Writer) {
 
 	app.Get("/server-id", func(c *fiber.Ctx) error {
 		currServerId = (currServerId + 1) % noOfServers
+		// add to hash map id
+		hashIPMap[currServerId] = c.Query("serverAddress")
 		return c.SendString(fmt.Sprint(currServerId))
 	})
 	app.Get("/serve/:id", func(c *fiber.Ctx) error {
 		id, _ := strconv.Atoi(c.Params("id"))
-		data, _ := json.Marshal(metaData[id])
+		data, _ := json.Marshal(metaData[id].Tablets)
 		return c.SendString(string(data))
 	})
 	app.Listen(addr)
