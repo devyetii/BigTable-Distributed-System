@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -59,4 +60,18 @@ func SendRebalanceRequest() {
 	if err := a.Parse(); err != nil {
 		log.Println(err)
 	}
+}
+
+func SendServerIdRequest() int {
+	a := fiber.Get(fmt.Sprintf("%v/load-balance-change", os.Getenv("MASTER_ADDR")))
+
+	if err := a.Parse(); err != nil {
+		log.Println(err)
+	}
+
+	_, sn, _ := a.String()
+	
+	isn, _ := strconv.Atoi(sn)
+
+	return isn
 }
