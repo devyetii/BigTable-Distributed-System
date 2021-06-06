@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+    "github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 
@@ -26,6 +27,16 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         Format: "${time} Handled ${status} - ${latency} ${method} ${path}\n",
     }))
 
+    app.Use(cors.New())
+
+    clientApi := app.Group("/row", func(c *fiber.Ctx) error {
+        if !serving {
+            return c.Status(fiber.StatusMethodNotAllowed).SendString("Not Ready")
+        } else {
+            return c.Next()
+        }
+    })
+
     app.Post("/serve", func(c *fiber.Ctx) error {
         // Recieve serve query
         var serveQuery ServeQueryType
@@ -36,7 +47,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         // Initialize tablets, get data from GFS and add it
         for _, t := range serveQuery {
             // Get data
-            data := GetDataFromGFS(t["From"], t["To"])
+            data := repo.httpClient.GetDataFromGFS(t["From"], t["To"])
             if (data == nil) {
                 return String(c, 400, "Error in GFS")
             }
@@ -58,7 +69,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         return c.Status(201).JSON("Started Serving")
     })
 
-    app.Get("/rows", func(c *fiber.Ctx) error {
+    clientApi.Get("/", func(c *fiber.Ctx) error {
         if list := c.Query("list"); list != "" {
             // Cast keys to row key type
             keys_list := MapStringsToRowKeys(strings.Split(list, ","), func (v string) (RowKeyType,error) { return RowKeyFromString(v) })
@@ -71,7 +82,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         return String(c, 400, "Needs list")
     })
 
-    app.Post("/row/:key", func(c *fiber.Ctx) error {
+    clientApi.Post("/:key", func(c *fiber.Ctx) error {
         row_key := c.Params("key")
         cols := make(BigTableEntry)
         if err := json.Unmarshal(c.Body(), &cols); err != nil {
@@ -89,7 +100,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         }
     })
 
-    app.Put("/row/:key/cells", func(c *fiber.Ctx) error {
+    clientApi.Put("/:key/cells", func(c *fiber.Ctx) error {
         row_key := c.Params("key")
         entry := make(BigTableEntry)
         if err := json.Unmarshal(c.Body(), &entry); err != nil {
@@ -108,7 +119,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         }
     })
 
-    app.Put("/row/:key/cells/delete", func(c *fiber.Ctx) error {
+    clientApi.Put("/:key/cells/delete", func(c *fiber.Ctx) error {
         row_key := c.Params("key")
         var col_keys []ColKeyType
 
@@ -128,7 +139,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         }
     })
 
-    app.Delete("/rows", func(c *fiber.Ctx) error {
+    clientApi.Delete("/", func(c *fiber.Ctx) error {
         if list := c.Query("list"); list != "" {
             // Cast keys to row key type
             keys_list := MapStringsToRowKeys(strings.Split(list, ","), func (v string) (RowKeyType,error) { return RowKeyFromString(v) })

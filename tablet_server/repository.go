@@ -12,6 +12,7 @@ type Repository struct {
     data BigTablePartition
     keys []RowKeyType
     updateLogsFile *SafeUpdateLog
+    httpClient *HttpClient
     tablets []*Tablet
 }
 
@@ -102,7 +103,7 @@ func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableE
 
     if (tablet.count + 1 > max_tablet_cap) {
         serving = false
-        SendRebalanceRequest()
+        repo.httpClient.SendRebalanceRequest()
         return nil
     }
 
