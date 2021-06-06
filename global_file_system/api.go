@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
   "github.com/gofiber/fiber/v2/middleware/logger"
 	"strconv"
-	"fmt"
 	"bytes"
 	"bufio"
 	"strings"
@@ -17,7 +16,7 @@ func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
 	app.Use(logger.New(logger.Config{
 		Output:     logFile,
 		TimeFormat: "2006/01/02 15:04:05",
-		Format:     "${time} ${status} - ${latency} ${method} ${path}",
+		Format:     "${time} ${status} - ${latency} ${method} ${path}\n",
 	}))
 
 	//NOTE: coupled with RowKeyType
@@ -52,29 +51,33 @@ func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
 				words := strings.Fields(sc.Text())
 				updates= append(updates,words)
 		}
-		updateTable(updates)
+		updateTable(updates,result)
 		return c.Status(200).SendString("ok")
 	})
 	app.Listen(addr)
 }
 
-func updateTable(updates [][]string) {
-	var addRow [][]string
-	var deleteRow [][]string
-	var addCell [][]string
-	var deleteCell [][]string
-	var setCell [][]string
+func updateTable(updates [][]string,result BigTablePartition) {
   for _, update := range updates {
+		key,_ := RowKeyFromString(update[1])
 		if update[0] == "add_row" {
-			addRow = append(addRow,update)
+
+			result[key] = make(BigTableEntry)
+
 		} else if update[0] == "delete_row" {
-			deleteRow = append(deleteRow,update)
-		} else if update[0] == "add_cell" {
-			addCell = append(addCell,update)
+
+				delete(result, key)
+
 		} else if update[0] == "delete_cell" {
-			deleteCell = append(deleteCell,update)
-		} else {
-			setCell = append(setCell,update)
+
+			colKey := ColKeyType(update[2])
+			result[key][colKey]=nil
+
+		} else if update[0] == "set_cell" {
+
+			colKey := ColKeyType(update[2])
+			result[key][colKey]=update[3]
+
 		}
 	}
 }
