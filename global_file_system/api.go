@@ -40,7 +40,7 @@ func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
 	})
 
 	app.Get("/rows-count", func(c *fiber.Ctx) error {
-		return c.Status(200).SendString(strconv.Itoa(len(result)))
+		return c.Status(200).SendString(strconv.Itoa(int(maxInd)))
 	})
 
 	app.Put("/update-rows", func(c *fiber.Ctx) error {
@@ -63,6 +63,9 @@ func updateTable(updates [][]string,result BigTablePartition) {
 		if update[0] == "add_row" {
 
 			result[key] = make(BigTableEntry)
+      if key>maxInd {
+				maxInd = key;
+			}
 
 		} else if update[0] == "delete_row" {
 

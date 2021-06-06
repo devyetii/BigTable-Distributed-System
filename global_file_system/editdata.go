@@ -8,6 +8,7 @@ import (
 	"math/rand"
 )
 type InputData []BigTableEntry
+var maxInd RowKeyType
 func changedata() {
 	//Open the dataset file
 	jsonFile, err := os.Open("dataset.json")
@@ -37,5 +38,5 @@ func changedata() {
 	str, err := json.Marshal(newTable)
 
 	dataFile.Write(str)
-
+	maxInd = 0 
 }
