@@ -1,26 +1,37 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"io/ioutil"
+	"log"
 	"math"
 	"net/http"
+	"strconv"
 )
 
 const tabletSize = 100
 const noOfServers = 2
 
 var GFSEndPoint string = "localhost:3033"
+var TabletServerEndPoint string = "localhost:3036"
 
 func getRowsCount() int {
-	fmt.Println(GFSEndPoint)
-	response, _ := http.Get(GFSEndPoint + "/rows-count")
-	fmt.Println(response.Body)
-	rowsCount := 500 //strconv.Atoi( response.
-	//print(rowsCount)
+	log.Println("get max row index from GFS")
+	response, err := http.Get(GFSEndPoint + "/rows-count")
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	rowsCount, _ := strconv.Atoi(bodyString)
 	return rowsCount
 }
 
 func assignDataToTablets() []Tablet {
+	log.Println("assign data to tablets")
 	dataRowsCount := getRowsCount()
 	noOfTablets := math.Ceil(float64(dataRowsCount) / float64(tabletSize))
 	tabletsArr := make([]Tablet, int(noOfTablets))
@@ -36,6 +47,7 @@ func assignDataToTablets() []Tablet {
 }
 
 func assignTabletsToServers(tablets []Tablet) []Server {
+	log.Println("assign tablets to availabe tablet servers")
 	noOfTabletsPerServer := int(math.Ceil(float64(len(tablets)) / noOfServers))
 	servers := make([]Server, noOfServers)
 	j := 0
@@ -59,6 +71,14 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 	return servers
 }
 
-func serveRequestServer(serverAddress string, data string) {
+func serveRequestServer(serverAddress string, data []byte) {
+	log.Println("send serve request to tablet server " + serverAddress)
+
+	responseBody := bytes.NewBuffer(data)
+	//Leverage Go's HTTP Post function to make request
+	_, err := http.Post(serverAddress+"/serve", "application/json", responseBody)
+	if err != nil {
+		log.Println(err)
+	}
 
 }
