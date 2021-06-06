@@ -12,6 +12,7 @@ import (
 // Start/Stop of the server
 var serving bool = false;
 var max_tablet_cap int
+var server_id int
 
 func main() {
 	// Load env vars
@@ -37,6 +38,10 @@ func main() {
 	}
 	defer update_logs_file.Close()
 	update_logger := SafeUpdateLog{file: *update_logs_file}
+
+	// Get server number
+	server_id = SendServerIdRequest()
+	fmt.Println(server_id)
 
 	// Create the repository service and bind the update logger
 	repo := Repository{data: BigTablePartition{}, keys: []RowKeyType{}, updateLogsFile: &update_logger}	
