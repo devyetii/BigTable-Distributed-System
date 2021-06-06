@@ -41,6 +41,10 @@ func InitApi(addr string, logFile io.Writer) {
 		tablets := assignDataToTablets()
 		metaData = assignTabletsToServers(tablets)
 		data, _ := json.Marshal(metaData)
+		// send serve request to all servers with new metadata
+		for _, element := range hashIPMap {
+			serveRequestServer(element, data)
+		}
 		return c.SendString(string(data))
 	})
 
