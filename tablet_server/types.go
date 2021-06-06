@@ -1,12 +1,23 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+	"sync"
+)
 
 type RowKeyType int
 type ColKeyType string
-type ValType interface{}
+type ValType string
 type BigTableEntry map[ColKeyType]ValType
 type BigTablePartition map[RowKeyType]BigTableEntry
+type ServeQueryType []map[string]RowKeyType
+
+type Tablet struct {
+    from RowKeyType
+    to RowKeyType
+    count int
+    mu sync.Mutex
+}
 
 // If you change the row key type, you only have to change the compare func
 func (first RowKeyType) LowerBound(second RowKeyType) bool {

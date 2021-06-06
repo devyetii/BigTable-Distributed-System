@@ -12,10 +12,21 @@ type Repository struct {
     data BigTablePartition
     keys []RowKeyType
     updateLogsFile *SafeUpdateLog
+    tablets []*Tablet
+}
+
+func (repo *Repository) AddData(data BigTablePartition) {
+    for k, v := range data {
+        if !repo.checkRowExists(k) {
+            repo.insertKeySorted(k)
+            repo.data[k] = v
+        }
+    }
+    fmt.Println(repo.keys)
 }
 
 func (repo *Repository) insertKeySorted(key RowKeyType) {
-    idx := sort.Search(len(keys), repo.keysLowerBoundComparator(key))
+    idx := sort.Search(len(repo.keys), repo.keysLowerBoundComparator(key))
 	
     // Expand capacity
     repo.keys = append(repo.keys, key)
@@ -40,31 +51,58 @@ func (repo *Repository) checkRowExists(row_key RowKeyType) bool {
     return ok
 }
 
-func (repo *Repository) getByRange(from RowKeyType, to RowKeyType) BigTablePartition {
-    if (from.UpperBound(to)) {
-        return nil
+func (repo *Repository) getTabletOfRow(rk RowKeyType) *Tablet {
+    for _, tab := range repo.tablets {
+        if rk.LowerBound(tab.from) && tab.to.LowerBound(rk) {
+            return tab
+        }
     }
+    return nil
+}
 
-    entries := make(BigTablePartition)
-    for i := sort.Search(len(repo.keys), repo.keysLowerBoundComparator(from)) ; i < len(repo.keys) && to.LowerBound(repo.keys[i]); i++ {
-        entries[repo.keys[i]] = data[repo.keys[i]]
+func (repo *Repository) getEntry(rk RowKeyType) BigTableEntry {
+    // Determine which tab
+    tablet := repo.getTabletOfRow(rk)
+    if (tablet != nil) {
+        // I know it's silly but its the only way I found
+        tablet.mu.Lock()
+        tablet.mu.Unlock()
+    
+        if v, ok := repo.data[rk]; ok {
+            return v
+        } else {
+            return nil
+        }
     }
-    return entries
+    return nil
 }
 
 func (repo *Repository) getByKeysList(keys []RowKeyType) BigTablePartition {
     entries := make(BigTablePartition)
     for _, k := range keys {
-        v, ok := repo.data[k]
-        if (ok) {
-            entries[k] = v
+        if ent := repo.getEntry(k); ent != nil {
+            entries[k] = ent
         }
     }
     return entries
 }
 
 func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableEntry {
+    // Get tablet
+    tablet := repo.getTabletOfRow(row_key)
+    if tablet == nil {
+        return nil
+    }
+    tablet.mu.Lock()
+    defer tablet.mu.Unlock()
+
     if (repo.checkRowExists(row_key)) {
+        return nil
+    }
+
+    if (tablet.count + 1 > max_tablet_cap) {
+        serving = false
+        SendRebalanceRequest()
         return nil
     }
 
@@ -76,6 +114,13 @@ func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableE
 }
 
 func (repo *Repository) setCells(row_key RowKeyType, cols BigTableEntry) BigTableEntry {
+    tablet := repo.getTabletOfRow(row_key)
+    if tablet == nil {
+        return nil
+    }
+    tablet.mu.Lock()
+    defer tablet.mu.Unlock()
+
     if (!repo.checkRowExists(row_key)) {
         return nil
     }
@@ -88,6 +133,13 @@ func (repo *Repository) setCells(row_key RowKeyType, cols BigTableEntry) BigTabl
 }
 
 func (repo *Repository) deleteCells(row_key RowKeyType, col_keys []ColKeyType) BigTableEntry {
+    tablet := repo.getTabletOfRow(row_key)
+    if tablet == nil {
+        return nil
+    }
+    tablet.mu.Lock()
+    defer tablet.mu.Unlock()
+
     if (!repo.checkRowExists(row_key)) {
         return nil
     }
@@ -99,13 +151,27 @@ func (repo *Repository) deleteCells(row_key RowKeyType, col_keys []ColKeyType) B
     return repo.data[row_key]
 }
 
-func (repo *Repository) deleteRow(row_key RowKeyType) bool {
-    if (!repo.checkRowExists(row_key)) {
-        return false
+func (repo *Repository) deleteRow(row_key RowKeyType) int {
+    tablet := repo.getTabletOfRow(row_key)
+    if tablet == nil {
+        return 0
     }
+    tablet.mu.Lock()
+    defer tablet.mu.Unlock()
 
-    repo.deleteKeySorted(row_key)
-    delete(repo.data, row_key)
-    repo.updateLogsFile.LogDeleteRow(row_key)
-	return true
+    if (repo.checkRowExists(row_key)) {
+        repo.deleteKeySorted(row_key)
+        delete(repo.data, row_key)
+        repo.updateLogsFile.LogDeleteRow(row_key)
+        return 1
+    }
+    return 0
+}
+
+func (repo *Repository) deleteRows(row_keys []RowKeyType) int {
+    count := 0
+    for _, rk := range row_keys {
+        count += int(repo.deleteRow(rk))
+    }
+    return count
 }
