@@ -1,20 +1,33 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"math"
+	"net/http"
+	"strconv"
 )
 
 const tabletSize = 100
 const noOfServers = 2
 
 var GFSEndPoint string = "localhost:3033"
+var TabletServerEndPoint string = "localhost:3036"
 
 func getRowsCount() int {
-	//fmt.Println(GFSEndPoint)
-	//response, _ := http.Get(GFSEndPoint + "/rows-count")
-	//fmt.Println(response.Body)
-	rowsCount := 500 //strconv.Atoi( response.
-	//print(rowsCount)
+	fmt.Println(GFSEndPoint)
+	response, err := http.Get(GFSEndPoint + "/rows-count")
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	rowsCount, _ := strconv.Atoi(bodyString)
 	return rowsCount
 }
 
@@ -57,6 +70,13 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 	return servers
 }
 
-func serveRequestServer(serverAddress string, data string) {
+func serveRequestServer(serverAddress string, data []byte) {
+
+	responseBody := bytes.NewBuffer(data)
+	//Leverage Go's HTTP Post function to make request
+	_, err := http.Post(serverAddress+"/serve", "application/json", responseBody)
+	if err != nil {
+		log.Println(err)
+	}
 
 }

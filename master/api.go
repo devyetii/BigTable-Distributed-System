@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 
 	"encoding/json"
 	"strconv"
@@ -16,12 +17,12 @@ var currServerId int = -1
 var hashIPMap map[int]string = make(map[int]string)
 
 func InitApi(addr string, logFile io.Writer) {
-	fmt.Println(addr)
 	app := fiber.New()
 
 	// compute iniital metadata and serve data
 	tablets := assignDataToTablets()
 	metaData = assignTabletsToServers(tablets)
+	log.Println("metadata initial calculation")
 
 	app.Use(logger.New(logger.Config{
 		Output:     logFile,
@@ -47,6 +48,9 @@ func InitApi(addr string, logFile io.Writer) {
 		currServerId = (currServerId + 1) % noOfServers
 		// add to hash map id
 		hashIPMap[currServerId] = c.Query("serverAddress")
+		// send serve request
+		data, _ := json.Marshal(metaData[currServerId].Tablets)
+		serveRequestServer(hashIPMap[currServerId], data)
 		return c.SendString(fmt.Sprint(currServerId))
 	})
 	app.Get("/serve/:id", func(c *fiber.Ctx) error {
