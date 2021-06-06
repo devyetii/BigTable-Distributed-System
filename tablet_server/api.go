@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	// "fmt"
 	"io"
 	"strings"
@@ -67,7 +68,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
             return c.JSON(repo.getByKeysList(keys_list))
         }
 
-        return String(c, 400, "Needs either range or list")
+        return String(c, 400, "Needs list")
     })
 
     app.Post("/row/:key", func(c *fiber.Ctx) error {
@@ -127,19 +128,18 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         }
     })
 
-    app.Delete("/row/:key", func(c *fiber.Ctx) error {
-        row_key := c.Params("key")
-
-        rk, err := RowKeyFromString(row_key)
-        if (err != nil) {
-            return String(c, 400, "Invalid Row Key")
+    app.Delete("/rows", func(c *fiber.Ctx) error {
+        if list := c.Query("list"); list != "" {
+            // Cast keys to row key type
+            keys_list := MapStringsToRowKeys(strings.Split(list, ","), func (v string) (RowKeyType,error) { return RowKeyFromString(v) })
+            if keys_list == nil {
+                return String(c, 400, "Invalid Keys")
+            }
+            delCount := repo.deleteRows(keys_list)
+            return String(c, 200, fmt.Sprintf("Deleted %v rows", delCount))
         }
 
-        if repo.deleteRow(rk) {
-            return String(c, 200, "Deleted")
-        } else {
-            return String(c, 404, "Row not found")
-        }
+        return String(c, 400, "Needs list")
     })
 
     app.Listen(addr)

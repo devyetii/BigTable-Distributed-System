@@ -2,13 +2,9 @@
 
 ### Get Rows (`GET /rows`)
 - Query Parameters
-    - `range` : 
-        - syntax `<row_key_type>-<row_key_type>`
-        - Return entries with `row_key` in the range `[from:to]` inclusive
     - `list` : 
         - syntax `<row_key_type>,<row_key_type>,<row_key_type>,...` i.e. comma separated list of `row_key`'s
         - Return entries with the given `row_key` values in the list. If a given `row_key` is not found; it's ignored.
-    > Note : If both sent, `range` is taken and `list` is ignored
 
 - Success Response (`200 OK`)
 ```json
@@ -26,7 +22,6 @@
 }
 ```
 - Error Responses
-    - `400 Invalid Range` in case the given range is invalid i.e. not castable to `row_key_type` or from > to
     - `400 Invalid Keys` in case one of the given list values is invalid i.e. not not castable to `row_key_type`
 
 
@@ -90,10 +85,11 @@
     - `400 Invalid column key` : one of the given `col_key`'s in the body is not castable to `col_key_type`
     - `404 Row not found` : The `key` route param given doesn't map to an existing `row_key` within the data
     
-### Delete a row (DELETE /row/:key)
-- Route Parameters
-    - `key row_key_type` : The key of the row to delete
-- Success Response (`200 OK`) : `Deleted`
+### Delete rows (DELETE /rows)
+- Query Parameters
+    - `list` : 
+        - syntax `<row_key_type>,<row_key_type>,<row_key_type>,...` i.e. comma separated list of `row_key`'s
+        - Deletes entries with the given `row_key` values in the list. If a given `row_key` is not found; it's ignored.
+- Success Response (`200 OK`) : `Deleted n rows`
 - Error Responses
-    - `400 Invalid row key` : The given `key` route param is not castable to `row_key_type
-    - `404 Row not found` : The `key` route param given doesn't map to an existing `row_key` within the data
+    - `400 Invalid Keys` in case one of the given list values is invalid i.e. not not castable to `row_key_type`

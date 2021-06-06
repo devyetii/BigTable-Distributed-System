@@ -9,29 +9,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// MOCK DATA
-// TODO Remove
-var keys []RowKeyType = []RowKeyType{
-    1,
-    5,
-    10,
-}
-
-var data BigTablePartition = BigTablePartition{
-	1 : BigTableEntry{
-		"name" : "ebrahim",
-		"age" : "22",
-	},
-	5 : BigTableEntry{
-		"name" : "Farha",
-		"age" : "23",
-	},
-	10 : BigTableEntry{
-		"name" : "Mahmoud",
-		"age" : "21",
-	},
-};
-
 // Start/Stop of the server
 var serving bool = false;
 var max_tablet_cap int
@@ -62,7 +39,7 @@ func main() {
 	update_logger := SafeUpdateLog{file: *update_logs_file}
 
 	// Create the repository service and bind the update logger
-	repo := Repository{data: data, keys: keys, updateLogsFile: &update_logger}	
+	repo := Repository{data: BigTablePartition{}, keys: []RowKeyType{}, updateLogsFile: &update_logger}	
 	
 	log.Println("Tablet Server Started")
 	

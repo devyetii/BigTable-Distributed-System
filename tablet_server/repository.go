@@ -17,13 +17,16 @@ type Repository struct {
 
 func (repo *Repository) AddData(data BigTablePartition) {
     for k, v := range data {
-        repo.data[k] = v
+        if !repo.checkRowExists(k) {
+            repo.insertKeySorted(k)
+            repo.data[k] = v
+        }
     }
+    fmt.Println(repo.keys)
 }
 
-
 func (repo *Repository) insertKeySorted(key RowKeyType) {
-    idx := sort.Search(len(keys), repo.keysLowerBoundComparator(key))
+    idx := sort.Search(len(repo.keys), repo.keysLowerBoundComparator(key))
 	
     // Expand capacity
     repo.keys = append(repo.keys, key)
@@ -148,20 +151,27 @@ func (repo *Repository) deleteCells(row_key RowKeyType, col_keys []ColKeyType) B
     return repo.data[row_key]
 }
 
-func (repo *Repository) deleteRow(row_key RowKeyType) bool {
+func (repo *Repository) deleteRow(row_key RowKeyType) int {
     tablet := repo.getTabletOfRow(row_key)
     if tablet == nil {
-        return false
+        return 0
     }
     tablet.mu.Lock()
     defer tablet.mu.Unlock()
 
-    if (!repo.checkRowExists(row_key)) {
-        return false
+    if (repo.checkRowExists(row_key)) {
+        repo.deleteKeySorted(row_key)
+        delete(repo.data, row_key)
+        repo.updateLogsFile.LogDeleteRow(row_key)
+        return 1
     }
+    return 0
+}
 
-    repo.deleteKeySorted(row_key)
-    delete(repo.data, row_key)
-    repo.updateLogsFile.LogDeleteRow(row_key)
-	return true
+func (repo *Repository) deleteRows(row_keys []RowKeyType) int {
+    count := 0
+    for _, rk := range row_keys {
+        count += int(repo.deleteRow(rk))
+    }
+    return count
 }
