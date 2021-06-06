@@ -20,9 +20,9 @@ func InitApi(addr string, logFile io.Writer) {
 	app := fiber.New()
 
 	// compute iniital metadata and serve data
+	log.Println("metadata initial calculation")
 	tablets := assignDataToTablets()
 	metaData = assignTabletsToServers(tablets)
-	log.Println("metadata initial calculation")
 
 	app.Use(logger.New(logger.Config{
 		Output:     logFile,

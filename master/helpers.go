@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
@@ -17,7 +16,7 @@ var GFSEndPoint string = "localhost:3033"
 var TabletServerEndPoint string = "localhost:3036"
 
 func getRowsCount() int {
-	fmt.Println(GFSEndPoint)
+	log.Println("get max row index from GFS")
 	response, err := http.Get(GFSEndPoint + "/rows-count")
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +31,7 @@ func getRowsCount() int {
 }
 
 func assignDataToTablets() []Tablet {
+	log.Println("assign data to tablets")
 	dataRowsCount := getRowsCount()
 	noOfTablets := math.Ceil(float64(dataRowsCount) / float64(tabletSize))
 	tabletsArr := make([]Tablet, int(noOfTablets))
@@ -47,6 +47,7 @@ func assignDataToTablets() []Tablet {
 }
 
 func assignTabletsToServers(tablets []Tablet) []Server {
+	log.Println("assign tablets to availabe tablet servers")
 	noOfTabletsPerServer := int(math.Ceil(float64(len(tablets)) / noOfServers))
 	servers := make([]Server, noOfServers)
 	j := 0
@@ -71,6 +72,7 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 }
 
 func serveRequestServer(serverAddress string, data []byte) {
+	log.Println("send serve request to tablet server " + serverAddress)
 
 	responseBody := bytes.NewBuffer(data)
 	//Leverage Go's HTTP Post function to make request

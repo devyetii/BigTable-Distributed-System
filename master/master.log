@@ -1,2 +1,5 @@
-2021/06/06 20:56:31 Master Server Started
-2021/06/06 20:56:31 metadata initial calculation
+2021/06/06 21:06:06 Master Server Started
+2021/06/06 21:06:06 assign data to tablets
+2021/06/06 21:06:06 get max row index from GFS
+2021/06/06 21:06:06 assign tablets to availabe tablet servers
+2021/06/06 21:06:06 metadata initial calculation
