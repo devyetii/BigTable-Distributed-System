@@ -1,4 +1,4 @@
-2021/06/06 03:31:01 200 - 31.1168ms PUT /update-rows
-2021/06/06 03:31:41 200 - 24.1071ms PUT /update-rows
-2021/06/06 03:32:06 200 - 21.128ms PUT /update-rows
-2021/06/06 03:34:22 200 - 0s GET /rows-count
+2021/06/06 03:53:17 200 - 23.7593ms PUT /update-rows
+2021/06/06 03:53:41 200 - 28.6821ms PUT /update-rows
+2021/06/06 03:55:33 200 - 25.8736ms PUT /update-rows
+2021/06/06 03:56:55 200 - 24.1231ms PUT /update-rows

@@ -10,7 +10,6 @@ import (
 	"strings"
 	"os"
 	"encoding/json"
-	"fmt"
 )
 
 func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
@@ -64,9 +63,9 @@ func updateTable(updates [][]string,result BigTablePartition) {
   for _, update := range updates {
 		key,_ := RowKeyFromString(update[1])
 		if update[0] == "add_row" {
-			fmt.Println(result[key],len(result))
-			result[key] = make(BigTableEntry)
-			fmt.Println(result[key],len(result))
+
+			var newRow BigTableEntry = BigTableEntry{ }
+			result[key] = newRow
       if key>maxInd {
 				maxInd = key;
 			}
