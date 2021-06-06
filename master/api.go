@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"io"
 
 	"encoding/json"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 var metaData []Server
+var currServerId int = -1
 
 func InitApi(addr string, logFile io.Writer) {
 	app := fiber.New()
@@ -38,5 +41,14 @@ func InitApi(addr string, logFile io.Writer) {
 		return c.SendString(string(data))
 	})
 
+	app.Get("/server-id", func(c *fiber.Ctx) error {
+		currServerId = (currServerId + 1) % noOfServers
+		return c.SendString(fmt.Sprint(currServerId))
+	})
+	app.Get("/serve/:id", func(c *fiber.Ctx) error {
+		id, _ := strconv.Atoi(c.Params("id"))
+		data, _ := json.Marshal(metaData[id])
+		return c.SendString(string(data))
+	})
 	app.Listen(addr)
 }
