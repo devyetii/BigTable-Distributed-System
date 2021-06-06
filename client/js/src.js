@@ -1,5 +1,8 @@
 let metadata = [];
 let clientLogs = [];
+const MASTER = 3030,
+	SERVER1 = 3031,
+	SERVER2 = 3032;
 
 export function writeLogs(port, log) {
 	clientLogs.push(`${new Date().toISOString().replace('T', ' ').replace('Z', '')} client at port=${port} ${log}`);
@@ -27,7 +30,7 @@ function formatMetaData(tempMetaData) {
 
 function getCrrentMetaData() {
 	console.log('fettt', clientLogs);
-	fetch('http://localhost:3030/')
+	fetch(`http://localhost:${MASTER}/metadata`)
 		.then((res) => {
 			metadata = formatMetaData(res.json);
 			writeLogs(location.port, 'fetched METADATA');
@@ -47,21 +50,23 @@ export function getRowsCorrectedURLs(paramValue) {
 		}
 	});
 	if (breakPoint === 0) {
-		urls[0] = `:3032/rows?list=${JSON.stringify(paramValue).replace(/[\[\]']+/g, '')}`;
+		urls[0] = `:${SERVER2}/row?list=${JSON.stringify(paramValue).replace(/[\[\]']+/g, '')}`;
 	} else if (breakPoint === Infinity) {
-		urls[0] = `:3031/rows?list=${JSON.stringify(paramValue).replace(/[\[\]']+/g, '')}`;
+		urls[0] = `:${SERVER1}/row?list=${JSON.stringify(paramValue).replace(/[\[\]']+/g, '')}`;
 	} else {
-		urls[0] = `:3031/rows?list=${JSON.stringify(paramValue.slice(0, breakPoint)).replace(/[\[\]']+/g, '')}`;
-		urls.push(`:3032/rows?list=${JSON.stringify(paramValue.slice(breakPoint, Infinity)).replace(/[\[\]']+/g, '')}`);
+		urls[0] = `:${SERVER1}/row?list=${JSON.stringify(paramValue.slice(0, breakPoint)).replace(/[\[\]']+/g, '')}`;
+		urls.push(
+			`:${SERVER2}/row?list=${JSON.stringify(paramValue.slice(breakPoint, Infinity)).replace(/[\[\]']+/g, '')}`
+		);
 	}
 	return urls;
 }
 
 export function getServerPort(rowKey) {
 	if (rowKey >= metadata[0].min && rowKey <= metadata[0].max) {
-		return '3031';
+		return `${SERVER1}`;
 	} else if (rowKey >= metadata[1].min && rowKey <= metadata[1].max) {
-		return '3032';
+		return `${SERVER2}`;
 	} else {
 		return '';
 	}
