@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"net/http"
 )
 
 const tabletSize = 100
@@ -12,9 +10,9 @@ const noOfServers = 2
 var GFSEndPoint string = "localhost:3033"
 
 func getRowsCount() int {
-	fmt.Println(GFSEndPoint)
-	response, _ := http.Get(GFSEndPoint + "/rows-count")
-	fmt.Println(response.Body)
+	//fmt.Println(GFSEndPoint)
+	//response, _ := http.Get(GFSEndPoint + "/rows-count")
+	//fmt.Println(response.Body)
 	rowsCount := 500 //strconv.Atoi( response.
 	//print(rowsCount)
 	return rowsCount

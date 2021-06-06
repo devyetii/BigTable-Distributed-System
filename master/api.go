@@ -16,6 +16,7 @@ var currServerId int = -1
 var hashIPMap map[int]string = make(map[int]string)
 
 func InitApi(addr string, logFile io.Writer) {
+	fmt.Println(addr)
 	app := fiber.New()
 
 	// compute iniital metadata and serve data
