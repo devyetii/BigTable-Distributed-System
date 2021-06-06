@@ -8,6 +8,9 @@ import (
 	"bytes"
 	"bufio"
 	"strings"
+	"os"
+	"encoding/json"
+	"fmt"
 )
 
 func InitApi(addr string, logFile io.Writer, result BigTablePartition) {
@@ -61,8 +64,9 @@ func updateTable(updates [][]string,result BigTablePartition) {
   for _, update := range updates {
 		key,_ := RowKeyFromString(update[1])
 		if update[0] == "add_row" {
-
+			fmt.Println(result[key],len(result))
 			result[key] = make(BigTableEntry)
+			fmt.Println(result[key],len(result))
       if key>maxInd {
 				maxInd = key;
 			}
@@ -74,7 +78,7 @@ func updateTable(updates [][]string,result BigTablePartition) {
 		} else if update[0] == "delete_cell" {
 
 			colKey := ColKeyType(update[2])
-			result[key][colKey]=nil
+			delete(result[key], colKey)
 
 		} else if update[0] == "set_cell" {
 
@@ -83,4 +87,7 @@ func updateTable(updates [][]string,result BigTablePartition) {
 
 		}
 	}
+	dataFile, _ := os.OpenFile("data.json", os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0644)
+	str, _ := json.Marshal(result)
+	dataFile.Write(str)
 }
