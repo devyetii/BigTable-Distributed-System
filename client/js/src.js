@@ -1,13 +1,14 @@
 let metadata = [];
 let clientLogs = '';
-const MASTER = 'http://b2812c5b1cdd.ngrok.io',
-	SERVER1 = 'http://b68cf1c5b8d9.ngrok.io',
-	SERVER2 = 'http://b15b11989dda.ngrok.io',
+const MASTER = 'http://7de6b6c42899.ngrok.io',
+	SERVER1 = 'http://2bd60e1c4e32.ngrok.io',
+	SERVER2 = 'http://cc9b9a1fb217.ngrok.io',
 	infinity = 10000000;
 
 function writeLogs(port, log) {
-	clientLogs +=
-		`${new Date().toISOString().replace('T', ' ').replace('Z', '')} client at port=${port} ${log}` + '\r\n';
+	let logs = localStorage.getItem('logs');
+	logs += `${new Date().toISOString().replace('T', ' ').replace('Z', '')} client at port=${port} ${log}` + '\r\n';
+	localStorage.setItem('logs', logs);
 }
 
 document.getElementById('exportLogs').addEventListener('click', function () {
