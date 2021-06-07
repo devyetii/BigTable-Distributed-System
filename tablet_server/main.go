@@ -57,9 +57,10 @@ func main() {
 	httpClient = HttpClient{ updateLogger: &update_logger }
 
 	// Get server number
-	for server_id = httpClient.SendServerIdRequest(); server_id < 0; {
+	for server_id < 0 {
 		log.Println("Waiting for master")
 		time.Sleep(5 * time.Second)
+		server_id = httpClient.SendServerIdRequest()
 	}
 	log.Println(fmt.Sprintf("Got id %v from master", server_id))
 
