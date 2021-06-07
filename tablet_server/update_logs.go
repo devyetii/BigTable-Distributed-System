@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sync"
 )
@@ -12,7 +13,8 @@ type SafeUpdateLog struct {
 }
 
 func (l *SafeUpdateLog) GetFileForRead() *os.File {
-	l.file.Seek(0,0)
+	_, err := l.file.Seek(0,0)
+	justPrintErr(err)
 	return l.file
 }
 
@@ -55,7 +57,7 @@ func (l *SafeUpdateLog) ClearLogs() {
 	l.file.Close()
 	update_logs_file, err := os.OpenFile("updates.log", os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0644)
 	if (err != nil) {
-		panic(err)
+		log.Println(fmt.Sprintf("Error in clearing logs: %v", err))
 	}
 	l.file = update_logs_file
 }
