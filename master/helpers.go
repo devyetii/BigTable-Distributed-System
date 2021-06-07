@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
+	"time"
+	"github.com/gofiber/fiber/v2"
 )
 
 const tabletSize = 100
@@ -72,13 +73,20 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 }
 
 func serveRequestServer(serverAddress string, data []byte) {
-	log.Println("send serve request to tablet server " + serverAddress)
-
-	responseBody := bytes.NewBuffer(data)
-	//Leverage Go's HTTP Post function to make request
-	_, err := http.Post(serverAddress+"/serve", "application/json", responseBody)
-	if err != nil {
-		log.Println(err)
+	
+	
+	for i := 0; i < 10; i++ {
+		log.Println("send serve request to tablet server " + serverAddress)
+		a := fiber.Post(serverAddress + "/serve").Body(data)
+		
+		if err := a.Parse(); err != nil {
+			log.Println(err)
+		}
+	
+		code, _, _ := a.Bytes()	
+		if code > 0 {
+			break
+		}
+		time.Sleep(5 * time.Second)
 	}
-
 }

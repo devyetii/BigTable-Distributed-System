@@ -53,8 +53,9 @@ func InitApi(addr string, logFile io.Writer) {
 		// add to hash map id
 		hashIPMap[currServerId] = c.Query("serverAddress")
 		// send serve request
+		fmt.Println(hashIPMap[currServerId])
 		data, _ := json.Marshal(metaData[currServerId].Tablets)
-		serveRequestServer(hashIPMap[currServerId], data)
+		go serveRequestServer(hashIPMap[currServerId], data)
 		return c.SendString(fmt.Sprint(currServerId))
 	})
 	app.Get("/serve/:id", func(c *fiber.Ctx) error {
