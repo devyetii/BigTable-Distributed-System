@@ -15,6 +15,7 @@ import (
 var serving bool = false
 var max_tablet_cap int
 var server_id int = -1
+var port int
 
 var update_logger SafeUpdateLog
 var httpClient HttpClient
@@ -35,6 +36,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
+
+	port, _ = strconv.Atoi(os.Args[1])
 
 	// Get max cap
 	max_tablet_cap, _ = strconv.Atoi(os.Getenv("MAX_TAB_CAP"))
@@ -73,6 +76,5 @@ func main() {
 	log.Println("Tablet Server Started")
 	
 	// Create the API and bind the repo
-	addr := fmt.Sprintf("%v:%v", os.Getenv("SELF_ADDR"), os.Getenv("PORT"))
-	InitApi(addr, &repo, log_file)
+	InitApi(fmt.Sprintf(":%v", port), &repo, log_file)
 }
