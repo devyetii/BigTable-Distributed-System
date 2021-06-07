@@ -1,5 +1,4 @@
 let metadata = [];
-let clientLogs = '';
 const MASTER = 'http://7de6b6c42899.ngrok.io',
 	SERVER1 = 'http://2bd60e1c4e32.ngrok.io',
 	SERVER2 = 'http://cc9b9a1fb217.ngrok.io',
@@ -13,7 +12,7 @@ function writeLogs(port, log) {
 
 document.getElementById('exportLogs').addEventListener('click', function () {
 	let tempLink = document.createElement('a');
-	let uri = `data:application/octet-stream,${encodeURIComponent(clientLogs)}`;
+	let uri = `data:application/octet-stream,${encodeURIComponent(localStorage.getItem('logs'))}`;
 	tempLink.setAttribute('download', `client-${location.port}.log`);
 	tempLink.setAttribute('href', uri);
 	tempLink.click();
