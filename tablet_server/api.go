@@ -44,6 +44,10 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
             return String(c, 400, fmt.Sprintf("Error in serve query: %v", err))
         }
 
+        // Flush changes and clear repo
+        repo.httpClient.SendUpdatesToGFS()
+        repo.Clear()
+
         // Initialize tablets, get data from GFS and add it
         for _, t := range serveQuery {
             // Get data
