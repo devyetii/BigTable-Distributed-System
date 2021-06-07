@@ -1,8 +1,8 @@
 let metadata = [];
 let clientLogs = '';
-const MASTER = 'http://localhost:3030',
-	SERVER1 = 'http://localhost:3031',
-	SERVER2 = 'http://localhost:3032',
+const MASTER = 'http://b2812c5b1cdd.ngrok.io',
+	SERVER1 = 'http://b68cf1c5b8d9.ngrok.io',
+	SERVER2 = 'http://b15b11989dda.ngrok.io',
 	infinity = 10000000;
 
 function writeLogs(port, log) {
@@ -77,4 +77,4 @@ function getServer(rowKey) {
 }
 
 // schedule metadata fetching every 2 seconds till infinity
-setInterval(getCrrentMetaData, 2000);
+setInterval(getCrrentMetaData, 10000);

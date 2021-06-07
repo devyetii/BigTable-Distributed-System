@@ -1,23 +1,88 @@
-2021/06/07 10:16:20 Master Server Started
-2021/06/07 10:16:20 metadata initial calculation
-2021/06/07 10:16:20 assign data to tablets
-2021/06/07 10:16:20 get max row index from GFS
-2021/06/07 10:16:21 assign tablets to availabe tablet servers
-2021/06/07 10:16:21 200 - 525.7µs GET /metadata
-2021/06/07 10:16:21 200 - 0s GET /metadata
-2021/06/07 10:16:21 200 - 0s GET /metadata
-2021/06/07 10:16:21 200 - 0s GET /metadata
-2021/06/07 10:16:27 200 - 0s GET /metadata
-2021/06/07 10:16:27 200 - 0s GET /metadata
-2021/06/07 10:16:32 200 - 1.0921ms GET /server-id
-2021/06/07 10:16:32 send serve request to tablet server http://localhost:3031
-2021/06/07 10:16:33 200 - 0s GET /metadata
-2021/06/07 10:16:33 200 - 0s GET /metadata
-2021/06/07 10:16:37 200 - 5.7659ms GET /server-id
-2021/06/07 10:16:38 send serve request to tablet server http://localhost:3032
-2021/06/07 10:17:02 assign data to tablets
-2021/06/07 10:17:02 get max row index from GFS
-2021/06/07 10:17:02 assign tablets to availabe tablet servers
-2021/06/07 10:17:02 200 - 522.7µs GET /load-balance-change
-2021/06/07 10:17:02 send serve request to tablet server http://localhost:3032
-2021/06/07 10:17:02 send serve request to tablet server http://localhost:3031
+2021/06/07 18:22:16 Master Server Started
+2021/06/07 18:22:16 metadata initial calculation
+2021/06/07 18:22:16 assign data to tablets
+2021/06/07 18:22:16 get max row index from GFS
+2021/06/07 18:22:16 assign tablets to availabe tablet servers
+2021/06/07 18:22:45 200 - 512.5µs GET /server-id
+2021/06/07 18:22:46 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:22:51 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:22:56 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:01 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:06 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:11 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:16 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:21 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:26 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:28 200 - 12.1499ms GET /server-id
+2021/06/07 18:23:28 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:31 send serve request to tablet server http://localhost:3031:3031
+2021/06/07 18:23:33 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:38 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:43 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:48 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:53 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:23:58 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:24:00 200 - 8.6494ms GET /server-id
+2021/06/07 18:24:00 send serve request to tablet server http://localhost:3031
+2021/06/07 18:24:02 200 - 0s GET /server-id
+2021/06/07 18:24:02 send serve request to tablet server http://localhost:3032
+2021/06/07 18:24:03 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:24:08 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:24:13 send serve request to tablet server http://localhost:3032:3032
+2021/06/07 18:24:42 200 - 0s GET /metadata
+2021/06/07 18:24:44 200 - 0s GET /metadata
+2021/06/07 18:24:44 200 - 0s GET /metadata
+2021/06/07 18:24:46 200 - 0s GET /metadata
+2021/06/07 18:24:47 200 - 0s GET /metadata
+2021/06/07 18:24:49 200 - 0s GET /metadata
+2021/06/07 18:24:51 200 - 996.2µs GET /metadata
+2021/06/07 18:24:53 200 - 0s GET /metadata
+2021/06/07 18:24:59 200 - 0s GET /metadata
+2021/06/07 18:24:59 200 - 0s GET /metadata
+2021/06/07 18:25:02 200 - 0s GET /metadata
+2021/06/07 18:25:04 200 - 0s GET /metadata
+2021/06/07 18:25:05 200 - 0s GET /metadata
+2021/06/07 18:25:07 200 - 0s GET /metadata
+2021/06/07 18:25:09 200 - 0s GET /metadata
+2021/06/07 18:25:11 200 - 0s GET /metadata
+2021/06/07 18:25:13 200 - 0s GET /metadata
+2021/06/07 18:25:15 200 - 0s GET /metadata
+2021/06/07 18:25:17 200 - 0s GET /metadata
+2021/06/07 18:25:19 200 - 0s GET /metadata
+2021/06/07 18:25:21 200 - 0s GET /metadata
+2021/06/07 18:25:23 200 - 0s GET /metadata
+2021/06/07 18:25:25 200 - 0s GET /metadata
+2021/06/07 18:25:27 200 - 0s GET /metadata
+2021/06/07 18:25:30 200 - 0s GET /metadata
+2021/06/07 18:25:31 200 - 0s GET /metadata
+2021/06/07 18:25:33 200 - 0s GET /metadata
+2021/06/07 18:25:35 200 - 0s GET /metadata
+2021/06/07 18:25:38 200 - 0s GET /metadata
+2021/06/07 18:25:39 200 - 0s GET /metadata
+2021/06/07 18:25:41 200 - 0s GET /metadata
+2021/06/07 18:25:43 200 - 0s GET /metadata
+2021/06/07 18:25:45 200 - 0s GET /metadata
+2021/06/07 18:25:47 200 - 0s GET /metadata
+2021/06/07 18:25:49 200 - 0s GET /metadata
+2021/06/07 18:25:51 200 - 0s GET /metadata
+2021/06/07 18:25:58 200 - 0s GET /metadata
+2021/06/07 18:25:59 200 - 0s GET /metadata
+2021/06/07 18:26:01 200 - 0s GET /metadata
+2021/06/07 18:26:03 200 - 0s GET /metadata
+2021/06/07 18:26:05 200 - 0s GET /metadata
+2021/06/07 18:26:08 200 - 0s GET /metadata
+2021/06/07 18:26:10 200 - 0s GET /metadata
+2021/06/07 18:26:12 200 - 0s GET /metadata
+2021/06/07 18:26:14 200 - 0s GET /metadata
+2021/06/07 18:26:16 200 - 0s GET /metadata
+2021/06/07 18:26:18 200 - 0s GET /metadata
+2021/06/07 18:26:19 200 - 0s GET /metadata
+2021/06/07 18:26:21 200 - 0s GET /metadata
+2021/06/07 18:26:23 200 - 0s GET /metadata
+2021/06/07 18:26:25 200 - 0s GET /metadata
+2021/06/07 18:26:27 200 - 0s GET /metadata
+2021/06/07 18:26:29 200 - 0s GET /metadata
+2021/06/07 18:26:31 200 - 0s GET /metadata
+2021/06/07 18:26:33 200 - 999µs GET /metadata
+2021/06/07 18:26:35 200 - 0s GET /metadata
+2021/06/07 18:26:37 200 - 0s GET /metadata
