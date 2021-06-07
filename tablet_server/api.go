@@ -41,7 +41,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         // Recieve serve query
         var serveQuery ServeQueryType
         if err := json.Unmarshal(c.Body(), &serveQuery); err != nil {
-            return String(c, 400, "Error in serve query")
+            return String(c, 400, fmt.Sprintf("Error in serve query: %v", err))
         }
 
         // Initialize tablets, get data from GFS and add it
@@ -65,7 +65,10 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
             // Assign new tablet
             repo.tablets = append(repo.tablets, &currentTablet)
         }
+
+        // Turn on serving
         serving = true
+
         return c.Status(201).JSON("Started Serving")
     })
 
@@ -86,12 +89,12 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         row_key := c.Params("key")
         cols := make(BigTableEntry)
         if err := json.Unmarshal(c.Body(), &cols); err != nil {
-            return c.SendStatus(400)
+            return String(c, 400, fmt.Sprintf("%v", err))
         }
 
         rk, err := RowKeyFromString(row_key)
         if (err != nil) {
-            return String(c, 400, "Invalid Row Key")
+            return String(c, 400, fmt.Sprintf("Invalid Row Key: %v", err))
         }
         if row := repo.addRow(rk, cols); row != nil {
             return c.JSON(row)
@@ -104,7 +107,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         row_key := c.Params("key")
         entry := make(BigTableEntry)
         if err := json.Unmarshal(c.Body(), &entry); err != nil {
-            return String(c, 400, "Invalid Column Keys")
+            return String(c, 400, fmt.Sprintf("Invalid Col Keys: %v", err))
         }
 
         rk, err := RowKeyFromString(row_key)
@@ -124,12 +127,12 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         var col_keys []ColKeyType
 
         if err := json.Unmarshal(c.Body(), &col_keys); err != nil {
-            return String(c, 400, "Invalid Column Keys")
+            return String(c, 400, fmt.Sprintf("Invalid Column Keys: %v", err))
         }
         
         rk, err := RowKeyFromString(row_key)
         if (err != nil) {
-            return String(c, 400, "Invalid Row Key")
+            return String(c, 400, fmt.Sprintf("Invalid Row Key: %v", err))
         }
 
         if row := repo.deleteCells(rk, col_keys); row != nil {

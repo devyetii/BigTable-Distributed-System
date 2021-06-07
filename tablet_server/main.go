@@ -5,15 +5,16 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/jasonlvhit/gocron"
+	"github.com/joho/godotenv"
 )
 
 // Start/Stop of the server
-var serving bool = false;
+var serving bool = false
 var max_tablet_cap int
-var server_id int
+var server_id int = -1
 
 var update_logger SafeUpdateLog
 var httpClient HttpClient
@@ -21,6 +22,12 @@ var httpClient HttpClient
 func cron(httpClient *HttpClient) {
 	gocron.Every(1).Minute().Do(httpClient.SendUpdatesToGFS)
 	<- gocron.Start()
+}
+
+func justPrintErr(err error) {
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func main() {
@@ -50,12 +57,16 @@ func main() {
 	httpClient = HttpClient{ updateLogger: &update_logger }
 
 	// Get server number
-	server_id = httpClient.SendServerIdRequest()
+	for server_id = httpClient.SendServerIdRequest(); server_id < 0; {
+		log.Println("Waiting for master")
+		time.Sleep(5 * time.Second)
+	}
 	log.Println(fmt.Sprintf("Got id %v from master", server_id))
 
 	// Create the repository service and bind the update logger
 	repo := Repository{data: BigTablePartition{}, keys: []RowKeyType{}, httpClient: &httpClient, updateLogsFile: &update_logger}	
 	
+	// Run the update logger sender cron
 	go cron(&httpClient)
 
 	log.Println("Tablet Server Started")

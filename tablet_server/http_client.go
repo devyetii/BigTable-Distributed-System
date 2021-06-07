@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -13,26 +14,44 @@ type HttpClient struct {
 	updateLogger *SafeUpdateLog
 }
 
+func checkResponseErrors(code int, errors []error) bool {
+	if (code != fiber.StatusOK || len(errors) > 0) {
+		log.Println(fmt.Sprintf("Errors in GFS Request: %v", code))
+		for err := range errors {
+			log.Println(err)
+		}
+		return true
+	}
+	return false
+}
+
 func (client *HttpClient) GetDataFromGFS(from RowKeyType, to RowKeyType) BigTablePartition {
+	log.Println(fmt.Sprintf("Sending GET /rows to GFS from %v to %v", from, to))
 	a := fiber.Get(fmt.Sprintf("%v/rows", os.Getenv("GFS_ADDR")))
 	defer fiber.ReleaseAgent(a)
 	a.QueryString(fmt.Sprintf("from=%v&to=%v", from, to))
 
 	if err := a.Parse(); err != nil {
+		log.Println(fmt.Sprintf("Errors in GFS Request: %v", err))
 		return nil
 	}
 	log.Println(fmt.Sprintf("Sent GET /rows to GFS from %v to %v", from, to))
 
 	var result BigTablePartition
-	code, _, _ := a.Struct(&result)
-	
-	if (code != fiber.StatusOK) {
+	code, body, errors := a.Bytes()
+
+	if checkResponseErrors(code, errors) {
 		return nil
 	}
-	return result	
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		log.Println(fmt.Sprintf("Errors in GFS Unmarshal: %v", err))
+	}
+	return result
 }
 
 func (client *HttpClient) SendUpdatesToGFS() bool {
+	log.Println("Sending POST /updates to gfs")
 	client.updateLogger.mu.Lock()
 	defer client.updateLogger.mu.Unlock()
 	a := fiber.Post(fmt.Sprintf("%v/updates", os.Getenv("GFS_ADDR")))
@@ -44,37 +63,56 @@ func (client *HttpClient) SendUpdatesToGFS() bool {
 		log.Println(err)
 		return false
 	}
-	
-	code, _, _ := a.String()
-	
-	client.updateLogger.ClearLogs()
 	log.Println("Sent POST /updates to gfs")
 
+	code, _, errors := a.String()
+
+	if checkResponseErrors(code, errors) {
+		return false
+	}
+	
+	client.updateLogger.ClearLogs()
+	
 	return code >= 200 && code < 400 
 }
 
 func (client *HttpClient) SendRebalanceRequest() {
+	log.Println("Sending GET /load-balance-change to master")
 	a := fiber.Get(fmt.Sprintf("%v/load-balance-change", os.Getenv("MASTER_ADDR")))
 	defer fiber.ReleaseAgent(a)
 
 	
 	if err := a.Parse(); err != nil {
 		log.Println(err)
+		return
 	}
-	
 	log.Println("Sent GET /load-balance-change to master")
+	
+	code, _, errors := a.Bytes()
+	
+	if checkResponseErrors(code, errors) {
+		return
+	}
+
 }
 
 func (client *HttpClient) SendServerIdRequest() int {
+	log.Println("Sending GET /server-id to master")
 	a := fiber.Get(fmt.Sprintf("%v/server-id", os.Getenv("MASTER_ADDR")))
 	defer fiber.ReleaseAgent(a)
 
 	if err := a.Parse(); err != nil {
 		log.Println(err)
+		return -1
 	}
 	log.Println("Sent GET /server-id to master")
-	_, sn, _ := a.String()
+
+	code, sn, errors := a.String()
 	
+	if checkResponseErrors(code, errors) {
+		return -1
+	}
+
 	isn, _ := strconv.Atoi(sn)
 
 	return isn

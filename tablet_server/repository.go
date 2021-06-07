@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sort"
 )
 
@@ -92,16 +93,19 @@ func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableE
     // Get tablet
     tablet := repo.getTabletOfRow(row_key)
     if tablet == nil {
+        log.Println(fmt.Sprintf("in addRow, tablet not found for row %v", row_key))
         return nil
     }
     tablet.mu.Lock()
     defer tablet.mu.Unlock()
 
     if (repo.checkRowExists(row_key)) {
+        log.Println("in addRow, row already found")
         return nil
     }
 
     if (tablet.count + 1 > max_tablet_cap) {
+        log.Println("in addRow, tablet overflow")
         serving = false
         repo.httpClient.SendRebalanceRequest()
         return nil
@@ -117,12 +121,14 @@ func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableE
 func (repo *Repository) setCells(row_key RowKeyType, cols BigTableEntry) BigTableEntry {
     tablet := repo.getTabletOfRow(row_key)
     if tablet == nil {
+        log.Println("in setCells, tablet not found")
         return nil
     }
     tablet.mu.Lock()
     defer tablet.mu.Unlock()
 
     if (!repo.checkRowExists(row_key)) {
+        log.Println("in setCells, row not found")
         return nil
     }
 
@@ -136,12 +142,14 @@ func (repo *Repository) setCells(row_key RowKeyType, cols BigTableEntry) BigTabl
 func (repo *Repository) deleteCells(row_key RowKeyType, col_keys []ColKeyType) BigTableEntry {
     tablet := repo.getTabletOfRow(row_key)
     if tablet == nil {
+        log.Println("in deleteCells, tablet not found")
         return nil
     }
     tablet.mu.Lock()
     defer tablet.mu.Unlock()
 
     if (!repo.checkRowExists(row_key)) {
+        log.Println("in deleteCells, row not found")
         return nil
     }
 
@@ -155,6 +163,7 @@ func (repo *Repository) deleteCells(row_key RowKeyType, col_keys []ColKeyType) B
 func (repo *Repository) deleteRow(row_key RowKeyType) int {
     tablet := repo.getTabletOfRow(row_key)
     if tablet == nil {
+        log.Println(fmt.Sprintf("in deleteRow, tablet not found for row %v", row_key))
         return 0
     }
     tablet.mu.Lock()
