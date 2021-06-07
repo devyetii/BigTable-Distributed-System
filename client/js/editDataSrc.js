@@ -1,29 +1,31 @@
-import { getRowsCorrectedURLs, getServerPort, writeLogs } from './src';
-
 function singleRowRequest(method, url, bodyUnParsed, successMessage, logData) {
 	let parsedValues = bodyUnParsed.split(',');
 	let body = {};
 
 	parsedValues.forEach((element) => {
 		let [key, value] = element.split(':');
-		try {
-			value = JSON.parse(value);
-		} catch (error) {}
-		body = { ...body, key: value };
-
-		fetch(url, {
-			method,
-			body: JSON.stringify(body),
-		})
-			.then((res) => {
-				writeLogs(logData.port, logData.message);
-				alert(successMessage);
-				console.log(res);
-			})
-			.catch((err) => {
-				alert(err);
-			});
+		body[key] = value;
 	});
+
+	fetch(url, {
+		method,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(body),
+	})
+		.then((res) => {
+			writeLogs(logData.port, logData.message);
+			if (res.ok) {
+				alert(successMessage);
+			} else {
+				alert(`${method} Request Failed`);
+			}
+			console.log(res);
+		})
+		.catch((err) => {
+			alert(err);
+		});
 }
 
 document.getElementById('addRowButton').addEventListener('click', function () {
@@ -81,7 +83,7 @@ document.getElementById('deleteCellsButton').addEventListener('click', function 
 		return;
 	}
 	singleRowRequest(
-		'PUT',
+		'DELETE',
 		`http://localhost:${port}/row/${rowKey}/cells/delete`,
 		deleteCellsColKeysInput.value,
 		'row cells deleted successfully',
@@ -98,21 +100,23 @@ document.getElementById('deleteRowsButton').addEventListener('click', function (
 	let urls = getRowsCorrectedURLs(rowsList);
 
 	fetch(`http://localhost${urls[0]}`, { method: 'DELETE' })
-		.then((res) => {
-			writeLogs(location.port, `GET from server${urls[0].split('?')[0]}`);
-			currentRows = res.json;
-
+		.then(async (res) => {
+			alert(res);
+			writeLogs(location.port, `DELETE rows from server${urls[0].split('?')[0]}`);
 			if (urls.length > 1) {
-				fetch(`http://localhost${urls[1]}`)
-					.then((res2) => {
-						writeLogs(location.port, `GET from server${urls[1].split('?')[0]}`);
-						currentRows = currentRows.concat(res2.json);
-						renderRows(currentRows);
+				fetch(`http://localhost${urls[1]}`, { method: 'DELETE' })
+					.then(async (res2) => {
+						alert(res2);
+						writeLogs(location.port, `DELETE rows from server${urls[1].split('?')[0]}`);
 					})
-					.catch((err2) => console.log(err2));
-			} else {
-				renderRows(currentRows);
+					.catch((err2) => {
+						alert(err2);
+						console.log(err2);
+					});
 			}
 		})
-		.catch((err) => console.log(err));
+		.catch((err) => {
+			alert(err);
+			console.log(err);
+		});
 });

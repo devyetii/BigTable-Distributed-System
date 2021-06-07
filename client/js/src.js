@@ -4,8 +4,8 @@ const MASTER = 3030,
 	SERVER1 = 3031,
 	SERVER2 = 3032;
 
-export function writeLogs(port, log) {
-	clientLogs.push(`${new Date().toISOString().replace('T', ' ').replace('Z', '')} client at port=${port} ${log}`);
+function writeLogs(port, log) {
+	clientLogs.push(`${new Date().toISOString().replace('T', ' ').replace('Z', '')} client at port=${port} ${log}\n`);
 }
 
 document.getElementById('exportLogs').addEventListener('click', function () {
@@ -19,28 +19,31 @@ document.getElementById('exportLogs').addEventListener('click', function () {
 
 function formatMetaData(tempMetaData) {
 	tempMetaData = tempMetaData.map((server) => {
-		let [min, max] = [Infinity, 0];
+		let [min, max] = [10000000, 0];
 		server.Tablets.forEach((tablet) => {
-			min = Math.min(min, +tablet.From);
-			max = Math.max(max, +tablet.to);
+			if (tablet.From !== tablet.To) {
+				min = Math.min(min, tablet.From);
+				max = Math.max(max, tablet.To);
+			}
 		});
 		return { min, max };
 	});
+	return tempMetaData;
 }
 
 function getCrrentMetaData() {
-	console.log('fettt', clientLogs);
 	fetch(`http://localhost:${MASTER}/metadata`)
-		.then((res) => {
-			metadata = formatMetaData(res.json);
+		.then(async (res) => {
+			metadata = formatMetaData(JSON.parse(await res.text()));
+			console.log(metadata);
 			writeLogs(location.port, 'fetched METADATA');
 		})
 		.catch((err) => console.log(err));
 }
 
-document.documentElement.addEventListener('load', getCrrentMetaData());
+getCrrentMetaData();
 
-export function getRowsCorrectedURLs(paramValue) {
+function getRowsCorrectedURLs(paramValue) {
 	let urls = [''];
 	paramValue = paramValue.sort();
 	let breakPoint = Infinity;
@@ -62,7 +65,7 @@ export function getRowsCorrectedURLs(paramValue) {
 	return urls;
 }
 
-export function getServerPort(rowKey) {
+function getServerPort(rowKey) {
 	if (rowKey >= metadata[0].min && rowKey <= metadata[0].max) {
 		return `${SERVER1}`;
 	} else if (rowKey >= metadata[1].min && rowKey <= metadata[1].max) {

@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
 	"github.com/gofiber/fiber/v2"
 )
 
-const tabletSize = 100
+const tabletSize = 10000
 const noOfServers = 2
 
 var GFSEndPoint string = "localhost:3033"
@@ -72,21 +73,21 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 	return servers
 }
 
-func serveRequestServer(serverAddress string, data []byte) {
-	
-	
+func serveRequestServer(serverAddress string, data []byte, c chan int) {
+
 	for i := 0; i < 10; i++ {
 		log.Println("send serve request to tablet server " + serverAddress)
 		a := fiber.Post(serverAddress + "/serve").Body(data)
-		
+
 		if err := a.Parse(); err != nil {
 			log.Println(err)
 		}
-	
-		code, _, _ := a.Bytes()	
+
+		code, _, _ := a.Bytes()
 		if code > 0 {
 			break
 		}
 		time.Sleep(5 * time.Second)
 	}
+	close(c)
 }

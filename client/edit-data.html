@@ -9,8 +9,6 @@
 	<link href="https://cdn.jsdelivr.net/npm/daisyui@1.3.2/dist/full.css" rel="stylesheet" type="text/css" />
 	<link href="https://cdn.jsdelivr.net/npm/daisyui@1.3.2/dist/themes.css" rel="stylesheet" type="text/css" />
 
-	<script type="module" src="./js/src.js"></script>
-	<script type="module" src="./js/editDataSrc.js"></script>
 </head>
 
 <body class="bg-base-100">
@@ -34,6 +32,12 @@
 		</div>
 
 		<section>
+			<div class="pt-4 flex justify-center">
+				<button type="button" class="btn btn-secondary justify-center" id="exportLogs">
+					Download Current Logs
+				</button>
+			</div>
+
 			<div class="p-10 m-10 card bg-base-200">
 				<div class="flex flex-row justify-around">
 					<div class="form-control max-w-3xl mr-2">
@@ -130,7 +134,8 @@
 		</section>
 	</main>
 
-
+	<script src="./js/src.js"></script>
+	<script src="./js/editDataSrc.js"></script>
 </body>
 
 </html>

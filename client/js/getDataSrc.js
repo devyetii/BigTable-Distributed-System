@@ -1,5 +1,3 @@
-import { getRowsCorrectedURLs, writeLogs } from './src.js';
-
 function renderRow(row) {
 	let rowElement = document.createElement('span');
 	let rowContent = '';
@@ -13,9 +11,9 @@ function renderRow(row) {
 
 function renderRows(rows) {
 	let parentArea = document.getElementById('rows');
-	rows.forEach((row) => {
-		parentArea.appendChild(renderRow(row));
-		parentArea.appendChild(document.createElement('div').setAttribute('class', 'divider'));
+	parentArea.innerHTML = '';
+	Object.keys(rows).forEach((row) => {
+		parentArea.appendChild(renderRow(rows[row]));
 	});
 }
 
@@ -32,15 +30,15 @@ document.getElementById('getRowsButton').addEventListener('click', function () {
 	let currentRows = [];
 
 	fetch(`http://localhost${urls[0]}`)
-		.then((res) => {
+		.then(async (res) => {
 			writeLogs(location.port, `GET from server${urls[0].split('?')[0]}`);
-			currentRows = res.json;
+			currentRows = JSON.parse(await res.text());
 
 			if (urls.length > 1) {
 				fetch(`http://localhost${urls[1]}`)
-					.then((res2) => {
+					.then(async (res2) => {
 						writeLogs(location.port, `GET from server${urls[1].split('?')[0]}`);
-						currentRows = currentRows.concat(res2.json);
+						currentRows = currentRows.concat(JSON.parse(await res2.text()));
 						renderRows(currentRows);
 					})
 					.catch((err2) => alert(err2));
