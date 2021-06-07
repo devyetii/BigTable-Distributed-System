@@ -117,6 +117,8 @@ func (repo *Repository) addRow(row_key RowKeyType, cols BigTableEntry) BigTableE
         return nil
     }
 
+    tablet.count += 1
+
 	repo.data[row_key] = cols
     repo.insertKeySorted(row_key)
     fmt.Println(repo.keys)

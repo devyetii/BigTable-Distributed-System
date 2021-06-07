@@ -103,7 +103,7 @@ func (client *HttpClient) SendRebalanceRequest() {
 func (client *HttpClient) SendServerIdRequest() int {
 	log.Println("Sending GET /server-id to master")
 	a := fiber.Get(fmt.Sprintf("%v/server-id", os.Getenv("MASTER_ADDR")))
-	a.QueryString(fmt.Sprintf("serverAddress=%v:%v", os.Getenv("SELF_ADDR"), port))
+	a.QueryString(fmt.Sprintf("serverAddress=%v", os.Getenv("SELF_ADDR")))
 	defer fiber.ReleaseAgent(a)
 
 	if err := a.Parse(); err != nil {
