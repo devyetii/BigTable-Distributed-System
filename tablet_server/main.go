@@ -73,6 +73,6 @@ func main() {
 	log.Println("Tablet Server Started")
 	
 	// Create the API and bind the repo
-	addr := fmt.Sprintf("localhost:%v", os.Getenv("PORT"))
+	addr := fmt.Sprintf("%v:%v", os.Getenv("SELF_ADDR"), os.Getenv("PORT"))
 	InitApi(addr, &repo, log_file)
 }
