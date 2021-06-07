@@ -82,7 +82,7 @@ func updateTable(updates [][]string,result BigTablePartition) {
 		} else if update[0] == "set_cell" {
 
 			colKey := ColKeyType(update[2])
-			result[key][colKey]=update[3]
+			result[key][colKey]=ValType(update[3])
 
 		}
 	}

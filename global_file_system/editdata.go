@@ -7,7 +7,7 @@ import (
 	"os"
 	"math/rand"
 )
-type InputData []BigTableEntry
+type InputData []map[ColKeyType]interface{}
 var maxInd RowKeyType
 func generateRandomKey(i int) RowKeyType{
 	c := i%5
@@ -45,7 +45,14 @@ func changeDataFormat() {
 		if x>maxInd {
 			maxInd = x
 		}
-		newTable[x]=v
+
+		entry := make(BigTableEntry)
+
+		for vk, vv := range v {
+			entry[vk] = fmt.Sprintf("%v", vv)
+		}
+
+		newTable[x] = entry
 	}
 
 	dataFile, err := os.OpenFile("data.json", os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0644)
