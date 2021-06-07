@@ -29,15 +29,15 @@ document.getElementById('getRowsButton').addEventListener('click', function () {
 	let urls = getRowsCorrectedURLs(rowsList);
 	let currentRows = [];
 
-	fetch(`http://localhost${urls[0]}`)
+	fetch(urls[0])
 		.then(async (res) => {
-			writeLogs(location.port, `GET from server${urls[0].split('?')[0]}`);
+			writeLogs(location.port, `GET from server${urls[0].includes(SERVER1) ? 1 : 2}`);
 			currentRows = JSON.parse(await res.text());
 
 			if (urls.length > 1) {
-				fetch(`http://localhost${urls[1]}`)
+				fetch(urls[1])
 					.then(async (res2) => {
-						writeLogs(location.port, `GET from server${urls[1].split('?')[0]}`);
+						writeLogs(location.port, `GET from server 2`);
 						currentRows = currentRows.concat(JSON.parse(await res2.text()));
 						renderRows(currentRows);
 					})

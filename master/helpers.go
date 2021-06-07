@@ -6,13 +6,15 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-const tabletSize = 10000
+var tabletSize, _ = strconv.Atoi(os.Args[3])
+
 const noOfServers = 2
 
 var GFSEndPoint string = "localhost:3033"

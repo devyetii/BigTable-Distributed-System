@@ -35,18 +35,15 @@ document.getElementById('addRowButton').addEventListener('click', function () {
 		return;
 	}
 	let rowKey = +addRowKeyInput.value;
-	let port = getServerPort(rowKey);
-	if (port === '') {
+	let serverURL = getServer(rowKey);
+	if (serverURL === '') {
 		alert('invalid row key');
 		return;
 	}
-	singleRowRequest(
-		'POST',
-		`http://localhost:${port}/row/${rowKey}`,
-		addRowColKeysInput.value,
-		'row added successfully',
-		{ port, message: `Add Row to server:${port}` }
-	);
+	singleRowRequest('POST', `${serverURL}/row/${rowKey}`, addRowColKeysInput.value, 'row added successfully', {
+		port: location.port,
+		message: `Add Row to server${serverURL === SERVER1 ? 1 : 2}`,
+	});
 });
 
 document.getElementById('editCellsButton').addEventListener('click', function () {
@@ -56,17 +53,20 @@ document.getElementById('editCellsButton').addEventListener('click', function ()
 		return;
 	}
 	let rowKey = +editCellsRowKeyInput.value;
-	let port = getServerPort(rowKey);
-	if (port === '') {
+	let serverURL = getServer(rowKey);
+	if (serverURL === '') {
 		alert('invalid row key');
 		return;
 	}
 	singleRowRequest(
 		'PUT',
-		`http://localhost:${port}/row/${rowKey}/cells`,
+		`${serverURL}/row/${rowKey}/cells`,
 		editCellsColKeysInput.value,
 		'row cells modified successfully',
-		{ port, message: `Edit Cell of Row:${rowKey} on server:${port}` }
+		{
+			port: location.port,
+			message: `Edit Cells from Row:${rowKey} on server${serverURL === SERVER1 ? 1 : 2}`,
+		}
 	);
 });
 
@@ -77,18 +77,28 @@ document.getElementById('deleteCellsButton').addEventListener('click', function 
 		return;
 	}
 	let rowKey = +deleteCellsRowKeyInput.value;
-	let port = getServerPort(rowKey);
-	if (port === '') {
+	let serverURL = getServer(rowKey);
+	if (serverURL === '') {
 		alert('invalid row key');
 		return;
 	}
-	singleRowRequest(
-		'DELETE',
-		`http://localhost:${port}/row/${rowKey}/cells/delete`,
-		deleteCellsColKeysInput.value,
-		'row cells deleted successfully',
-		{ port, message: `Delete Cell of Row:${rowKey} on server:${port}` }
-	);
+	let body = deleteCellsColKeysInput.value.split(',');
+	fetch(`${serverURL}/row/${rowKey}/cells/delete`, {
+		method: 'PUT',
+		body: JSON.stringify(body),
+	})
+		.then((res) => {
+			if (res.ok) {
+				writeLogs(location.port, `Delete Cell from Row:${rowKey} on server:${serverURL === SERVER1 ? 1 : 2}`);
+				alert('row cells deleted successfully');
+			} else {
+				alert(`${method} Request Failed`);
+			}
+			console.log(res);
+		})
+		.catch((err) => {
+			alert(err);
+		});
 });
 
 document.getElementById('deleteRowsButton').addEventListener('click', function () {
@@ -99,15 +109,15 @@ document.getElementById('deleteRowsButton').addEventListener('click', function (
 	let rowsList = deleteRowsInput.value.split(',').map((elm) => +elm);
 	let urls = getRowsCorrectedURLs(rowsList);
 
-	fetch(`http://localhost${urls[0]}`, { method: 'DELETE' })
+	fetch(urls[0], { method: 'DELETE' })
 		.then(async (res) => {
-			alert(res);
-			writeLogs(location.port, `DELETE rows from server${urls[0].split('?')[0]}`);
+			writeLogs(location.port, `DELETE rows from server${urls[0].includes(SERVER1) ? 1 : 2}`);
+			alert('rows deleted from server 1');
 			if (urls.length > 1) {
-				fetch(`http://localhost${urls[1]}`, { method: 'DELETE' })
+				fetch(urls[1], { method: 'DELETE' })
 					.then(async (res2) => {
-						alert(res2);
-						writeLogs(location.port, `DELETE rows from server${urls[1].split('?')[0]}`);
+						alert('rows deleted from server 2');
+						writeLogs(location.port, `DELETE rows from server 2`);
 					})
 					.catch((err2) => {
 						alert(err2);
