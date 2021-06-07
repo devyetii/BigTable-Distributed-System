@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-    "github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 
@@ -40,6 +41,7 @@ func InitApi(addr string, repo *Repository, logFile io.Writer) {
         // Recieve serve query
         var serveQuery ServeQueryType
         if err := json.Unmarshal(c.Body(), &serveQuery); err != nil {
+            log.Println(fmt.Sprintf("Error in serve request Unmarchal: %v", err))
             return String(c, 400, fmt.Sprintf("Error in serve query: %v", err))
         }
 
