@@ -16,7 +16,7 @@ type HttpClient struct {
 
 func checkResponseErrors(code int, errors []error) bool {
 	if (code != fiber.StatusOK || len(errors) > 0) {
-		log.Println(fmt.Sprintf("Errors in GFS Request: %v", code))
+		log.Println(fmt.Sprintf("Errors with code: %v", code))
 		for err := range errors {
 			log.Println(err)
 		}
@@ -51,6 +51,10 @@ func (client *HttpClient) GetDataFromGFS(from RowKeyType, to RowKeyType) BigTabl
 }
 
 func (client *HttpClient) SendUpdatesToGFS() bool {
+	if (!serving) {
+		return false
+	}
+
 	log.Println("Sending POST /updates to gfs")
 	client.updateLogger.mu.Lock()
 	defer client.updateLogger.mu.Unlock()
@@ -99,6 +103,7 @@ func (client *HttpClient) SendRebalanceRequest() {
 func (client *HttpClient) SendServerIdRequest() int {
 	log.Println("Sending GET /server-id to master")
 	a := fiber.Get(fmt.Sprintf("%v/server-id", os.Getenv("MASTER_ADDR")))
+	a.QueryString(fmt.Sprintf("serverAddress=%v:%v", os.Getenv("SELF_ADDR"),os.Getenv("PORT")))
 	defer fiber.ReleaseAgent(a)
 
 	if err := a.Parse(); err != nil {

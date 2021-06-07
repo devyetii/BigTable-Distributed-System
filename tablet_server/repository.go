@@ -27,6 +27,12 @@ func (repo *Repository) AddData(data BigTablePartition) {
     fmt.Println(repo.keys)
 }
 
+func (repo *Repository) Clear() {
+    repo.data = make(BigTablePartition)
+    repo.keys = []RowKeyType{}
+    repo.tablets = make([]*Tablet, 0)
+}
+
 func (repo *Repository) insertKeySorted(key RowKeyType) {
     idx := sort.Search(len(repo.keys), repo.keysLowerBoundComparator(key))
 	
