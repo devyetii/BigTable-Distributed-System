@@ -16,7 +16,7 @@ type HttpClient struct {
 
 func checkResponseErrors(code int, errors []error) bool {
 	if (code != fiber.StatusOK || len(errors) > 0) {
-		log.Println(fmt.Sprintf("Errors in GFS Request: %v", code))
+		log.Println(fmt.Sprintf("Errors with code: %v", code))
 		for err := range errors {
 			log.Println(err)
 		}
@@ -51,6 +51,10 @@ func (client *HttpClient) GetDataFromGFS(from RowKeyType, to RowKeyType) BigTabl
 }
 
 func (client *HttpClient) SendUpdatesToGFS() bool {
+	if (!serving) {
+		return false
+	}
+
 	log.Println("Sending POST /updates to gfs")
 	client.updateLogger.mu.Lock()
 	defer client.updateLogger.mu.Unlock()
