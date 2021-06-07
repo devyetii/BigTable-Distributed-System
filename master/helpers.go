@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
@@ -73,7 +74,7 @@ func assignTabletsToServers(tablets []Tablet) []Server {
 	return servers
 }
 
-func serveRequestServer(serverAddress string, data []byte, c chan int) {
+func serveRequestServer(serverAddress string, data []byte) {
 
 	for i := 0; i < 10; i++ {
 		log.Println("send serve request to tablet server " + serverAddress)
@@ -84,10 +85,11 @@ func serveRequestServer(serverAddress string, data []byte, c chan int) {
 		}
 
 		code, _, _ := a.Bytes()
+		fmt.Println(code)
 		if code > 0 {
 			break
 		}
 		time.Sleep(5 * time.Second)
 	}
-	close(c)
+
 }
